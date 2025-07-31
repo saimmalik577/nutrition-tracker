@@ -36,3 +36,36 @@ def parse_nutrition_info(text):
         "sugar": extract_value(r"sugar[^\d]*(\d+(\.\d+)?)"),
         "fiber": extract_value(r"fiber[^\d]*(\d+(\.\d+)?)"),
     }
+
+def calculate_bmr(gender, weight, height, age):
+    """Calculates Basal Metabolic Rate using Mifflin-St Jeor Equation."""
+    if gender.lower() == "male":
+        return 10 * weight + 6.25 * height - 5 * age + 5
+    else:
+        return 10 * weight + 6.25 * height - 5 * age - 161
+
+def calculate_maintenance(bmr, activity_multiplier):
+    """Returns maintenance calories (TDEE)."""
+    return bmr * activity_multiplier
+
+def calculate_goal_calories(maintenance, goal):
+    """Adjusts calories based on the goal."""
+    adjustments = {
+        "Maintain": 0,
+        "Slow Cut": -250,
+        "Aggressive Cut": -500,
+        "Slow Bulk": 250,
+        "Aggressive Bulk": 500,
+    }
+    return maintenance + adjustments.get(goal, 0)
+
+def calories_from_macros(log):
+    """Returns a breakdown of calories from protein, carbs, and fat."""
+    protein = log.get("protein", 0) * 4
+    carbohydrate = log.get("carbohydrate", 0) * 4
+    fat = log.get("fat", 0) * 9
+    return {
+        "Protein": protein,
+        "Carbs": carbohydrate,
+        "Fat": fat
+    }
