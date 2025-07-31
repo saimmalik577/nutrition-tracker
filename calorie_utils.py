@@ -1,9 +1,11 @@
+import os
 import requests
 from PIL import Image
-import io
-import json
+from dotenv import load_dotenv
+import re
 
-API_KEY = "K81180803388957"
+load_dotenv()
+API_KEY = os.getenv("OCR_SPACE_API_KEY")
 OCR_URL = "https://api.ocr.space/parse/image"
 
 def extract_text_from_image(uploaded_file):
@@ -22,8 +24,6 @@ def extract_text_from_image(uploaded_file):
         return ""
 
 def parse_nutrition_info(text):
-    import re
-
     def extract_value(pattern):
         match = re.search(pattern, text, re.IGNORECASE)
         return float(match.group(1)) if match else 0.0
