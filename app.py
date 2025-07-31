@@ -13,7 +13,7 @@ from daily_tracker import add_entry, get_daily_log, get_meal_log
 import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Nutrition OCR Tracker", page_icon="🍎")
-st.title("📸 Nutrition Label Scanner & Calorie Tracker")
+st.title("📸 Nutrition Label Scanner & Calorie Tracker 🚀")  # added 🚀 emoji
 
 # --- Upload Section ---
 uploaded_file = st.file_uploader("Upload a nutrition label photo", type=["jpg", "png", "jpeg"])
