@@ -1,28 +1,38 @@
-def calculate_bmr(sex, weight, height, age):
-    bmr = 10 * weight + 6.25 * height - 5 * age
-    bmr += 5 if sex == "male" else -161
-    return bmr
+import requests
+from PIL import Image
+import io
+import json
 
-def calculate_maintenance(bmr, activity_multiplier):
-    return bmr * activity_multiplier
+API_KEY = "K81180803388957"
+OCR_URL = "https://api.ocr.space/parse/image"
 
-def calculate_goal_calories(maintenance, goal):
-    modifiers = {
-        "Maintain": 1.0,
-        "Slow Cut": 0.85,
-        "Aggressive Cut": 0.75,
-        "Slow Bulk": 1.10,
-        "Aggressive Bulk": 1.20
-    }
-    return maintenance * modifiers[goal]
+def extract_text_from_image(uploaded_file):
+    image_bytes = uploaded_file.read()
+    
+    response = requests.post(
+        OCR_URL,
+        files={"filename": image_bytes},
+        data={"apikey": API_KEY, "language": "eng"},
+    )
 
-def calories_from_macros(log):
-    protein = log.get("protein", 0)
-    carbs = log.get("carbohydrate", 0)
-    fat = log.get("fat", 0)
+    result = response.json()
+    try:
+        return result["ParsedResults"][0]["ParsedText"]
+    except (KeyError, IndexError):
+        return ""
+
+def parse_nutrition_info(text):
+    import re
+
+    def extract_value(pattern):
+        match = re.search(pattern, text, re.IGNORECASE)
+        return float(match.group(1)) if match else 0.0
 
     return {
-        "Protein": round(protein * 4, 1),
-        "Carbs": round(carbs * 4, 1),
-        "Fat": round(fat * 9, 1)
+        "calories": extract_value(r"calories[^\d]*(\d+)"),
+        "protein": extract_value(r"protein[^\d]*(\d+(\.\d+)?)"),
+        "fat": extract_value(r"fat[^\d]*(\d+(\.\d+)?)"),
+        "carbohydrate": extract_value(r"carbohydrate[^\d]*(\d+(\.\d+)?)"),
+        "sugar": extract_value(r"sugar[^\d]*(\d+(\.\d+)?)"),
+        "fiber": extract_value(r"fiber[^\d]*(\d+(\.\d+)?)"),
     }

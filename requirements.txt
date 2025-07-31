@@ -1,0 +1,6 @@
+streamlit
+pillow
+matplotlib
+pytesseract
+pandas
+python-dotenv
