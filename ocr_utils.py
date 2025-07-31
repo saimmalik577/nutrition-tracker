@@ -1,10 +1,27 @@
-from PIL import Image
-import pytesseract
+import os
 import re
+import requests
+from dotenv import load_dotenv
 
-def extract_text_from_image(image_file):
-    image = Image.open(image_file)
-    return pytesseract.image_to_string(image)
+load_dotenv()
+
+API_KEY = os.getenv("OCR_API_KEY")
+OCR_URL = "https://api.ocr.space/parse/image"
+
+def extract_text_from_image(uploaded_file):
+    image_bytes = uploaded_file.read()
+
+    response = requests.post(
+        OCR_URL,
+        files={"filename": image_bytes},
+        data={"apikey": API_KEY, "language": "eng"},
+    )
+
+    result = response.json()
+    try:
+        return result["ParsedResults"][0]["ParsedText"]
+    except (KeyError, IndexError):
+        return ""
 
 def parse_nutrition_info(text):
     fields = {
@@ -20,7 +37,5 @@ def parse_nutrition_info(text):
     for key, pattern in fields.items():
         match = re.search(pattern, text, re.IGNORECASE)
         if match:
-            # Use the *last* group that matched (to support optional prefixes)
             result[key] = float(match.groups()[-1])
     return result
-
